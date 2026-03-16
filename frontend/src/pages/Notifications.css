@@ -1,0 +1,455 @@
+/* Notifications.css */
+.notifications-page {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 24px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Dark/Light theme variables */
+.notifications-page.dark {
+  --bg-primary: #0B1120;
+  --bg-secondary: #151F2F;
+  --bg-tertiary: #1E2A3A;
+  --bg-hover: #2A384B;
+  --text-primary: #E9EDF2;
+  --text-secondary: #9AA9B9;
+  --text-muted: #637180;
+  --accent-primary: #0EA5E9;
+  --accent-gradient: linear-gradient(135deg, #0EA5E9, #2563EB);
+  --border-color: #2A384B;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --unread-bg: rgba(14, 165, 233, 0.1);
+  --unread-border: rgba(14, 165, 233, 0.3);
+}
+
+.notifications-page.light {
+  --bg-primary: #F4F7FB;
+  --bg-secondary: #FFFFFF;
+  --bg-tertiary: #F0F4F9;
+  --bg-hover: #E8EDF5;
+  --text-primary: #1A2B3E;
+  --text-secondary: #4A5B6E;
+  --text-muted: #6F7E91;
+  --accent-primary: #0F62FE;
+  --accent-gradient: linear-gradient(135deg, #0F62FE, #2563EB);
+  --border-color: #E2E8F0;
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --unread-bg: rgba(15, 98, 254, 0.05);
+  --unread-border: rgba(15, 98, 254, 0.2);
+}
+
+.notifications-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  transform: translateX(-2px);
+}
+
+.back-button svg {
+  transition: transform 0.2s ease;
+}
+
+.back-button:hover svg {
+  transform: translateX(-2px);
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-title h1 {
+  font-size: 28px;
+  font-weight: 700;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+.unread-badge {
+  padding: 4px 12px;
+  background: var(--accent-primary);
+  color: white;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mark-all-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mark-all-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--accent-primary);
+}
+
+.settings-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.settings-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--accent-primary);
+  transform: rotate(30deg);
+}
+
+.notifications-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.notifications-list {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+.notification-item:hover {
+  background: var(--bg-hover);
+}
+
+.notification-item.unread {
+  background: var(--unread-bg);
+  border-left: 3px solid var(--accent-primary);
+}
+
+.notification-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background: var(--accent-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3);
+}
+
+.notification-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.notification-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.delete-notification {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  opacity: 0;
+}
+
+.notification-item:hover .delete-notification {
+  opacity: 1;
+}
+
+.delete-notification:hover {
+  background: var(--bg-tertiary);
+  color: var(--danger);
+}
+
+.notification-message {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.notification-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.notification-footer svg {
+  color: var(--text-muted);
+}
+
+.notification-time {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.unread-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--accent-primary);
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Empty State */
+.empty-notifications {
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.empty-notifications svg {
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-notifications h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.empty-notifications p {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* Footer */
+.notifications-footer {
+  max-width: 800px;
+  margin: 24px auto 0;
+  text-align: center;
+}
+
+.clear-all-btn {
+  padding: 12px 24px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-all-btn:hover {
+  background: var(--danger-bg);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+/* Scrollbar */
+.notifications-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notifications-list::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+
+.notifications-list::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 3px;
+}
+
+.notifications-list::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary);
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.notification-item {
+  animation: slideIn 0.3s ease;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .notifications-page {
+    padding: 16px;
+  }
+
+  .notifications-page-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .header-title {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .notification-item {
+    padding: 16px;
+  }
+
+  .notification-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .delete-notification {
+    opacity: 1;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+  }
+
+  .unread-dot {
+    top: 16px;
+    right: 50px;
+  }
+}
+
+@media (max-width: 480px) {
+  .notification-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .notification-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .empty-notifications {
+    padding: 60px 16px;
+  }
+
+  .empty-notifications svg {
+    width: 48px;
+    height: 48px;
+  }
+
+  .empty-notifications h3 {
+    font-size: 18px;
+  }
+
+  .clear-all-btn {
+    width: 100%;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .back-button,
+  .header-actions,
+  .delete-notification,
+  .clear-all-btn {
+    display: none !important;
+  }
+
+  .notifications-page {
+    background: white;
+    color: black;
+  }
+
+  .notification-item {
+    break-inside: avoid;
+    border: 1px solid #ddd;
+    margin-bottom: 8px;
+  }
+}

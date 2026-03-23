@@ -1,0 +1,137 @@
+# ============================================
+# Dependencies
+# ============================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# ============================================
+# Environment Variables (Sensitive Data)
+# ============================================
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.example
+*.env
+!.env.example
+
+# ============================================
+# Build Outputs
+# ============================================
+/dist
+/build
+/.next
+/out
+.vite/
+*.tsbuildinfo
+
+# ============================================
+# IDE and Editor Files
+# ============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.suo
+*.user
+*.sln
+*.code-workspace
+
+# ============================================
+# Logs
+# ============================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# ============================================
+# OS Generated Files
+# ============================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ============================================
+# Testing
+# ============================================
+coverage/
+.nyc_output/
+*.test.js
+*.spec.js
+*.test.ts
+*.spec.ts
+
+# ============================================
+# Uploads and Temporary Files
+# ============================================
+uploads/
+temp/
+tmp/
+*.tmp
+*.temp
+avatars/
+
+# ============================================
+# Database
+# ============================================
+*.sqlite
+*.sqlite3
+*.db
+*.sql
+
+# ============================================
+# Backend Specific
+# ============================================
+backend/uploads/
+backend/avatars/
+backend/node_modules/
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# ============================================
+# Frontend Specific
+# ============================================
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# ============================================
+# API Keys and Secrets
+# ============================================
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+.secrets/
+credentials.json
+service-account.json
+
+# ============================================
+# Misc
+# ============================================
+*.bak
+*.orig
+*.cache
+*.tmp
+*.temp

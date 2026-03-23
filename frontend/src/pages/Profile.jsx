@@ -1,153 +1,64 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Calendar, 
-  Link as LinkIcon,
-  Github, 
-  Twitter, 
-  Linkedin,
-  Edit2,
-  Save,
-  Camera,
-  ArrowLeft,
-  CheckCircle,
-  Loader2,
-  MessageSquare,
-  Award,
-  Clock
+  User, Mail, Phone, MapPin, Calendar, Link as LinkIcon,
+  Github, Twitter, Linkedin, Edit2, Save, Camera, ArrowLeft,
+  CheckCircle, Loader2, MessageSquare, Clock, X, LogOut
 } from "lucide-react";
 import "./Profile.css";
 
 function Profile() {
   const navigate = useNavigate();
-  const [darkMode, setDarkMode] = useState(true);
-  const [userProfile, setUserProfile] = useState({
-    name: '',
-    email: '',
-    username: '',
-    bio: '',
-    location: '',
-    website: '',
-    phone: '',
-    birthday: '',
-    avatar: null,
-    joinDate: new Date().toISOString(),
-    lastActive: new Date().toISOString(),
-    preferences: {
-      language: 'English',
-      timezone: 'PST (UTC-8)',
-      dateFormat: 'MM/DD/YYYY',
-      theme: 'dark'
-    },
-    social: {
-      github: '',
-      twitter: '',
-      linkedin: ''
-    },
-    stats: {
-      chats: 0,
-      messages: 0,
-      daysActive: 1
-    }
-  });
-  
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({ ...userProfile });
+  const [formData, setFormData] = useState({});
   const [saveStatus, setSaveStatus] = useState(null);
   const [previewAvatar, setPreviewAvatar] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [darkMode, setDarkMode] = useState(true);
   
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    // Load theme preference and profile data
-    loadProfile();
-  }, []);
-
-  const loadProfile = () => {
-    setLoading(true);
+    const storedToken = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
     
-    // Load theme from existing profile or default
-    const stored = localStorage.getItem("user_profile");
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        setUserProfile(parsed);
-        setFormData(parsed);
-        setDarkMode(parsed.preferences?.theme === 'dark');
-      } catch (error) {
-        console.error("Error parsing profile:", error);
-        // If error, use default empty profile
-        initializeEmptyProfile();
-      }
-    } else {
-      // No profile exists, use empty profile
-      initializeEmptyProfile();
+    if (!storedToken) {
+      navigate("/login");
+      return;
     }
     
-    // Load sessions to update stats
-    loadSessionStats();
+    setToken(storedToken);
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      setFormData(parsedUser);
+      setDarkMode(parsedUser.preferences?.theme === 'dark');
+    }
     
-    setLoading(false);
-  };
+    loadProfile(storedToken);
+  }, []);
 
-  const initializeEmptyProfile = () => {
-    const emptyProfile = {
-      name: '',
-      email: '',
-      username: '',
-      bio: '',
-      location: '',
-      website: '',
-      phone: '',
-      birthday: '',
-      avatar: null,
-      joinDate: new Date().toISOString(),
-      lastActive: new Date().toISOString(),
-      preferences: {
-        language: 'English',
-        timezone: 'PST (UTC-8)',
-        dateFormat: 'MM/DD/YYYY',
-        theme: 'dark'
-      },
-      social: {
-        github: '',
-        twitter: '',
-        linkedin: ''
-      },
-      stats: {
-        chats: 0,
-        messages: 0,
-        daysActive: 1
+  const loadProfile = async (authToken) => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/user/profile", {
+        headers: { Authorization: `Bearer ${authToken}` }
+      });
+      setUser(response.data);
+      setFormData(response.data);
+      setDarkMode(response.data.preferences?.theme === 'dark');
+      localStorage.setItem("user", JSON.stringify(response.data));
+    } catch (error) {
+      console.error("Error loading profile:", error);
+      if (error.response?.status === 401) {
+        navigate("/login");
       }
-    };
-    setUserProfile(emptyProfile);
-    setFormData(emptyProfile);
-  };
-
-  const loadSessionStats = () => {
-    const sessions = localStorage.getItem("ai_chats");
-    if (sessions) {
-      try {
-        const parsedSessions = JSON.parse(sessions);
-        const totalMessages = parsedSessions.reduce((acc, session) => 
-          acc + (session.messages?.length || 0), 0);
-        
-        setUserProfile(prev => ({
-          ...prev,
-          stats: {
-            chats: parsedSessions.length,
-            messages: totalMessages,
-            daysActive: prev.stats?.daysActive || 1
-          }
-        }));
-      } catch (error) {
-        console.error("Error loading sessions:", error);
-      }
+      setError("Failed to load profile");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -194,39 +105,52 @@ function Profile() {
     }
   };
 
-  const saveProfile = () => {
+  const saveProfile = async () => {
     setSaveStatus('saving');
+    setError(null);
     
-    // Simulate API call
-    setTimeout(() => {
-      const updatedProfile = {
-        ...formData,
-        lastActive: new Date().toISOString()
-      };
+    try {
+      const response = await axios.put("http://localhost:5000/api/user/profile", formData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       
-      setUserProfile(updatedProfile);
-      localStorage.setItem("user_profile", JSON.stringify(updatedProfile));
-      setSaveStatus('success');
-      setIsEditing(false);
-      setPreviewAvatar(null);
-      
-      // Update theme if changed
-      setDarkMode(updatedProfile.preferences?.theme === 'dark');
+      if (response.data.success) {
+        setUser(response.data.user);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+        setSaveStatus('success');
+        setIsEditing(false);
+        setPreviewAvatar(null);
+        setDarkMode(response.data.user.preferences?.theme === 'dark');
+        
+        setTimeout(() => {
+          setSaveStatus(null);
+        }, 2000);
+      }
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      setError("Failed to save profile. Please try again.");
+      setSaveStatus('error');
       
       setTimeout(() => {
         setSaveStatus(null);
-      }, 2000);
-    }, 1000);
+      }, 3000);
+    }
   };
 
   const cancelEdit = () => {
-    setFormData(userProfile);
+    setFormData(user);
     setIsEditing(false);
     setPreviewAvatar(null);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
+
   const formatDate = (dateString) => {
-    if (!dateString) return "Not set";
+    if (!dateString) return "";
     return new Date(dateString).toLocaleDateString('en-US', { 
       year: 'numeric', 
       month: 'long', 
@@ -243,6 +167,15 @@ function Profile() {
     );
   }
 
+  if (!user) {
+    return (
+      <div className="profile-page-loading">
+        <p>No user data found</p>
+        <button onClick={() => navigate("/login")}>Go to Login</button>
+      </div>
+    );
+  }
+
   return (
     <div className={`profile-page ${darkMode ? 'dark' : 'light'}`}>
       <div className="profile-page-header">
@@ -254,10 +187,16 @@ function Profile() {
         <h1>Profile</h1>
         
         {!isEditing ? (
-          <button className="edit-profile-btn" onClick={() => setIsEditing(true)}>
-            <Edit2 size={18} />
-            <span>Edit Profile</span>
-          </button>
+          <div className="header-actions">
+            <button className="edit-profile-btn" onClick={() => setIsEditing(true)}>
+              <Edit2 size={18} />
+              <span>Edit Profile</span>
+            </button>
+            <button className="logout-btn" onClick={handleLogout}>
+              <LogOut size={18} />
+              <span>Logout</span>
+            </button>
+          </div>
         ) : (
           <div className="header-actions">
             <button className="btn-secondary" onClick={cancelEdit}>
@@ -291,13 +230,20 @@ function Profile() {
         </div>
       )}
 
+      {error && (
+        <div className="error-banner">
+          <X size={20} />
+          <span>{error}</span>
+        </div>
+      )}
+
       <div className="profile-content">
-        {/* Left Sidebar - Profile Card */}
+        {/* Left Sidebar */}
         <div className="profile-sidebar">
           <div className="profile-avatar-section">
             <div className="profile-avatar-large">
-              {previewAvatar || userProfile.avatar ? (
-                <img src={previewAvatar || userProfile.avatar} alt={userProfile.name || 'Profile'} />
+              {previewAvatar || user.avatar ? (
+                <img src={previewAvatar || user.avatar} alt={user.name || "Profile"} />
               ) : (
                 <User size={60} />
               )}
@@ -324,35 +270,30 @@ function Profile() {
           </div>
 
           <div className="profile-name-section">
-            <h2>{userProfile.name || 'Your Name'}</h2>
-            <p className="profile-username">{userProfile.username || '@username'}</p>
-            <p className="profile-status">
-              <Clock size={12} />
-              Last active: Just now
-            </p>
+            <h2>{user.name || 'Your Name'}</h2>
+            <p className="profile-username">{user.username || '@username'}</p>
+            <p className="profile-email">{user.email}</p>
           </div>
 
           <div className="profile-stats-grid">
             <div className="stat-card">
               <MessageSquare size={20} />
               <div className="stat-info">
-                <span className="stat-value">{userProfile.stats?.chats || 0}</span>
+                <span className="stat-value">{user.stats?.chats || 0}</span>
                 <span className="stat-label">Chats</span>
               </div>
             </div>
-            
             <div className="stat-card">
               <User size={20} />
               <div className="stat-info">
-                <span className="stat-value">{userProfile.stats?.messages || 0}</span>
+                <span className="stat-value">{user.stats?.messages || 0}</span>
                 <span className="stat-label">Messages</span>
               </div>
             </div>
-            
             <div className="stat-card">
               <Calendar size={20} />
               <div className="stat-info">
-                <span className="stat-value">{userProfile.stats?.daysActive || 1}</span>
+                <span className="stat-value">{user.stats?.daysActive || 1}</span>
                 <span className="stat-label">Days Active</span>
               </div>
             </div>
@@ -360,14 +301,13 @@ function Profile() {
 
           <div className="profile-join-date">
             <Calendar size={14} />
-            <span>Joined {formatDate(userProfile.joinDate)}</span>
+            <span>Joined {formatDate(user.joinDate) || 'Today'}</span>
           </div>
         </div>
 
-        {/* Right Main Content */}
+        {/* Right Content */}
         <div className="profile-main">
           {isEditing ? (
-            // Edit Mode
             <div className="profile-edit-form">
               <div className="form-section">
                 <h3>Basic Information</h3>
@@ -553,114 +493,100 @@ function Profile() {
               </div>
             </div>
           ) : (
-            // View Mode
             <div className="profile-view">
-              {userProfile.bio && (
+              {user.bio && (
                 <div className="profile-bio-section">
                   <h3>About</h3>
-                  <p>{userProfile.bio}</p>
+                  <p>{user.bio}</p>
                 </div>
               )}
 
               <div className="profile-details-section">
                 <h3>Contact Information</h3>
                 <div className="details-grid">
-                  {userProfile.email ? (
+                  {user.email && (
                     <div className="detail-item">
                       <Mail size={18} />
-                      <span>{userProfile.email}</span>
-                    </div>
-                  ) : (
-                    <div className="detail-item empty">
-                      <Mail size={18} />
-                      <span className="empty-text">No email added</span>
+                      <span>{user.email}</span>
                     </div>
                   )}
-                  
-                  {userProfile.phone ? (
+                  {user.phone && (
                     <div className="detail-item">
                       <Phone size={18} />
-                      <span>{userProfile.phone}</span>
-                    </div>
-                  ) : (
-                    <div className="detail-item empty">
-                      <Phone size={18} />
-                      <span className="empty-text">No phone added</span>
+                      <span>{user.phone}</span>
                     </div>
                   )}
-                  
-                  {userProfile.location ? (
+                  {user.location && (
                     <div className="detail-item">
                       <MapPin size={18} />
-                      <span>{userProfile.location}</span>
-                    </div>
-                  ) : (
-                    <div className="detail-item empty">
-                      <MapPin size={18} />
-                      <span className="empty-text">No location added</span>
+                      <span>{user.location}</span>
                     </div>
                   )}
-                  
-                  {userProfile.website ? (
+                  {user.website && (
                     <div className="detail-item">
                       <LinkIcon size={18} />
-                      <a href={`https://${userProfile.website}`} target="_blank" rel="noopener noreferrer">
-                        {userProfile.website}
+                      <a href={`https://${user.website}`} target="_blank" rel="noopener noreferrer">
+                        {user.website}
                       </a>
                     </div>
-                  ) : (
-                    <div className="detail-item empty">
-                      <LinkIcon size={18} />
-                      <span className="empty-text">No website added</span>
-                    </div>
                   )}
-                  
-                  {userProfile.birthday ? (
+                  {user.birthday && (
                     <div className="detail-item">
                       <Calendar size={18} />
-                      <span>{formatDate(userProfile.birthday)}</span>
-                    </div>
-                  ) : (
-                    <div className="detail-item empty">
-                      <Calendar size={18} />
-                      <span className="empty-text">No birthday added</span>
+                      <span>{formatDate(user.birthday)}</span>
                     </div>
                   )}
                 </div>
+
+                {!user.email && !user.phone && !user.location && !user.website && !user.birthday && (
+                  <p className="empty-state-message">No contact information added yet.</p>
+                )}
               </div>
 
               <div className="profile-social-section">
                 <h3>Social Profiles</h3>
                 <div className="social-links">
-                  {userProfile.social?.github ? (
-                    <a href={`https://github.com/${userProfile.social.github}`} target="_blank" rel="noopener noreferrer" className="social-link">
+                  {user.social?.github && (
+                    <a href={`https://github.com/${user.social.github}`} target="_blank" rel="noopener noreferrer" className="social-link">
                       <Github size={20} />
                     </a>
-                  ) : (
-                    <div className="social-link empty">
-                      <Github size={20} />
-                    </div>
                   )}
-                  
-                  {userProfile.social?.twitter ? (
-                    <a href={`https://twitter.com/${userProfile.social.twitter}`} target="_blank" rel="noopener noreferrer" className="social-link">
+                  {user.social?.twitter && (
+                    <a href={`https://twitter.com/${user.social.twitter}`} target="_blank" rel="noopener noreferrer" className="social-link">
                       <Twitter size={20} />
                     </a>
-                  ) : (
-                    <div className="social-link empty">
-                      <Twitter size={20} />
-                    </div>
                   )}
-                  
-                  {userProfile.social?.linkedin ? (
-                    <a href={`https://linkedin.com/in/${userProfile.social.linkedin}`} target="_blank" rel="noopener noreferrer" className="social-link">
+                  {user.social?.linkedin && (
+                    <a href={`https://linkedin.com/in/${user.social.linkedin}`} target="_blank" rel="noopener noreferrer" className="social-link">
                       <Linkedin size={20} />
                     </a>
-                  ) : (
-                    <div className="social-link empty">
-                      <Linkedin size={20} />
-                    </div>
                   )}
+                </div>
+
+                {!user.social?.github && !user.social?.twitter && !user.social?.linkedin && (
+                  <p className="empty-state-message">No social profiles added yet.</p>
+                )}
+              </div>
+
+              <div className="profile-preferences-section">
+                <h3>Preferences</h3>
+                <div className="preferences-grid-view">
+                  <div className="pref-item">
+                    <span className="pref-label">Language:</span>
+                    <span className="pref-value">{user.preferences?.language || 'English'}</span>
+                  </div>
+                  <div className="pref-item">
+                    <span className="pref-label">Timezone:</span>
+                    <span className="pref-value">{user.preferences?.timezone || 'PST (UTC-8)'}</span>
+                  </div>
+                  <div className="pref-item">
+                    <span className="pref-label">Date Format:</span>
+                    <span className="pref-value">{user.preferences?.dateFormat || 'MM/DD/YYYY'}</span>
+                  </div>
+                  <div className="pref-item">
+                    <span className="pref-label">Theme:</span>
+                    <span className="pref-value">{user.preferences?.theme || 'dark'}</span>
+                  </div>
                 </div>
               </div>
             </div>
